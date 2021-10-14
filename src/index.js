@@ -30,29 +30,46 @@ app.post("/account", (request, response) => {
 
     customers.push(customer);
 
-    return response.status(201).json(customer);
+    return response.status(201).send();
 });
 
-app.use(verifyIfAccountExistsCPF);
-
 app.get("/customers", (request, response) => {
-    const { customer } = request;
+    if (request.headers.cpf) {
+        const customer = customers.find(c => c.cpf === request.headers.cpf);
 
-    if (customer) {
+        if (!customer) {
+            return response.status(400).json({ error: "Customer not found" });
+        }
+
         return response.json(customer);
     }
 
     return response.json(customers);
 });
 
+app.use(verifyIfAccountExistsCPF);
+
 app.get("/statement", (request, response) => {
     const { customer } = request;
 
-    if (!customer) {
-        return response.status(400).json({ error: "Customer not found" });
-    }
-
     return response.json(customer.statement);
+});
+
+app.post("/deposit", (request, response) => {
+    const { description, amount } = request.body;
+
+    const { customer } = request;
+
+    const statementOperation = {
+        description,
+        amount,
+        created_at: new Date(),
+        type: "credit"
+    };
+
+    customer.statement.push(statementOperation);
+
+    return response.status(201).send();
 });
 
 app.listen(3333);
