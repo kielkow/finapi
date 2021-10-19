@@ -126,4 +126,14 @@ app.get("/account", (request, response) => {
     return response.json(customer);
 });
 
+app.delete("/account", (request, response) => {
+    const { customer } = request;
+
+    const index = customers.indexOf(customer);
+
+    customers.splice(index, 1);
+
+    return response.status(200).json(customers);
+});
+
 app.listen(3333);
